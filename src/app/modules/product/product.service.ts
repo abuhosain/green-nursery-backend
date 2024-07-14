@@ -20,7 +20,7 @@ const crateProductIntoDB = async (payload: IProduct) => {
 // get all product from db
 const getAllProductsFromDb = async (query: Record<string, unknown>) => {
   const facultyQuery = new QueryBuilder(
-    Product.find().populate('category'),
+    Product.find({isDeleted : {$ne : true}}).populate('category'),
     query,
   )
     .search(productSearchableField)
