@@ -16,15 +16,24 @@ const createProduct = catchAsync(async (req, res) => {
 
 //  Retrieve a List of All Products
 const getAllProducts = catchAsync(async (req, res) => {
-  const query = req.query
-  const result = await ProductServices.getAllProductsFromDb(query)
-
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: 'Get All Products successfully',
-    data: result,
-  })
+  try {
+    const result = await ProductServices.getAllProductsFromDb(req.query);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'All Product get successfully',
+      data: result,
+    })
+  } catch (error) {
+    console.error("Error fetching products:", error); // Log the error
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Product fetching error',
+      data: [],
+    })
+  }
+  
 })
 
 //  Retrieve a  Products

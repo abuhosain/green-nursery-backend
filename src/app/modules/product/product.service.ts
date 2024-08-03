@@ -3,8 +3,22 @@ import AppError from '../../errors/AppError'
 import { Category } from '../category/category.model'
 import { IProduct } from './product.interface'
 import { Product } from './product.model'
-import QueryBuilder from '../../builder/QueryBuilder'
-import { productSearchableField } from './product.constant'
+import { QueryBuilder } from '../../builder/QueryBuilder'
+
+
+// const productSearchableField = ['title', 'description'] // Adjust based on your schema
+
+// interface ProductQuery {
+//   searchTerm?: string
+//   category?: string
+//   minPrice?: number
+//   maxPrice?: number
+//   rating?: number
+//   sort?: string
+//   limit?: number
+//   page?: number
+//   fields?: string
+// }
 
 // create product into db
 const crateProductIntoDB = async (payload: IProduct) => {
@@ -17,20 +31,34 @@ const crateProductIntoDB = async (payload: IProduct) => {
   return result
 }
 
-// get all product from db
 const getAllProductsFromDb = async (query: Record<string, unknown>) => {
-  const facultyQuery = new QueryBuilder(
-    Product.find({isDeleted : {$ne : true}}).populate('category'),
-    query,
-  )
-    .search(productSearchableField)
-    .filter()
-    .sort()
-    .paginate()
-    .fields()
-  const result = await facultyQuery.modelQuery
-  return result
-}
+  try {
+    const queryBuilder = new QueryBuilder<IProduct>(
+      Product.find({ isDeleted: { $ne: true } }).populate('category'), // Ensure 'category' is populated
+      query
+    )
+      .search(['title', 'description'])
+      .filter()
+      .sort()
+      .paginate()
+      .fields();
+
+    // Apply category filter if provided
+    if (query.category) {
+      queryBuilder.modelQuery = queryBuilder.modelQuery.find({
+        'category.name': query.category  // Adjust this if you store categories differently
+      });
+    }
+
+    const result = await queryBuilder.modelQuery.exec();
+    return result;
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    throw new Error("Failed to fetch products");
+  }
+};
+
+
 
 // get a single products by id
 const getProductByIdFromDB = async (id: string) => {
