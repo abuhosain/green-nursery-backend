@@ -25,16 +25,22 @@ export class QueryBuilder<T> {
     const queryObj = { ...this.query };
     const excludeField = ['searchTerm', 'sort', 'limit', 'page', 'fields'];
     excludeField.forEach(el => delete queryObj[el]);
-    
+
     // Add price range filtering
     if (queryObj.minPrice || queryObj.maxPrice) {
+      // Ensure queryObj.price is an object
       queryObj.price = {};
-      if (queryObj.minPrice) queryObj.price.$gte = Number(queryObj.minPrice);
-      if (queryObj.maxPrice) queryObj.price.$lte = Number(queryObj.maxPrice);
+
+      if (typeof queryObj.minPrice === 'string') {
+        (queryObj.price as Record<string, number>).$gte = Number(queryObj.minPrice);
+      }
+      if (typeof queryObj.maxPrice === 'string') {
+        (queryObj.price as Record<string, number>).$lte = Number(queryObj.maxPrice);
+      }
+
       delete queryObj.minPrice;
       delete queryObj.maxPrice;
     }
-    
 
     this.modelQuery = this.modelQuery.find(queryObj as FilterQuery<T>);
     return this;

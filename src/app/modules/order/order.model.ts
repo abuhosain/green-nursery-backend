@@ -25,6 +25,18 @@ const orderSchema = new Schema<IOrder>({
     type: Boolean,
     default: false,
   },
+  customerName: {
+    type: String,
+    required: true,
+  },
+  customerPhone: {
+    type: String,
+    required: true,
+  },
+  customerAddress: {
+    type: String,
+    required: true,
+  },
 }, {
   timestamps: true,
   versionKey: false,
