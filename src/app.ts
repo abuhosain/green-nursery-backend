@@ -1,33 +1,44 @@
-import { Application, Request, Response } from "express";
-import express from "express"
-import cors from "cors";
-import notFound from "./app/middleware/notFound";
-const app: Application = express();
-import cookieParser from "cookie-parser"
-import router from "./app/routes";
-import globalErrorHandler from "./app/middleware/globalErrorHandlers";
+import express, { Application, Request, Response } from 'express';
+import cors from 'cors';
+import path from 'path';
+import cookieParser from 'cookie-parser';
+import notFound from './app/middleware/notFound';
+import router from './app/routes';
+import globalErrorHandler from './app/middleware/globalErrorHandlers';
 
-// parser
+const app: Application = express();
+
+// Middleware setup
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ origin: ['https://green-nursery-frontend.vercel.app'], credentials: true }));
 
+// CORS setup
+app.use(cors({
+  origin: ['http://localhost:5173', 'https://green-nursery-frontend.vercel.app'],
+  credentials: true,
+}));
 
-// application routes
-app.use('/api/', router)
+// Serve static files from the 'build' directory
+app.use(express.static(path.join(__dirname, '..', 'build')));
 
-const test = async (req: Request, res: Response) => {
-  // Promise.reject()
-  const a = "Green nursery server is running";
-  res.send(a);
-};
+// Application routes
+app.use('/api/', router);
 
-app.get("/", test);
+// Test route
+app.get('/', async (req: Request, res: Response) => {
+  const message = 'Green nursery server is running';
+  res.send(message);
+});
 
-// global error handler
-app.use(globalErrorHandler)
+// Catch-all route for client-side routing
+app.get('*', (req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, '..', 'build', 'index.html'));
+});
 
-// not found route
+// Global error handler
+app.use(globalErrorHandler);
+
+// Not found route
 app.use(notFound);
 
 export default app;
